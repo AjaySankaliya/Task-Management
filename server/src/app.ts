@@ -1,8 +1,8 @@
 import express from "express";
 import cors from "cors";
 import authRoutes from "./routes/authRouter";
+import projectRoutes from "./routes/ProjectRouter";
 import { errorMiddleware } from "./middleware/errorMiddleware";
-import { ipv4 } from "zod";
 
 const app = express();
 
@@ -21,6 +21,8 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+
+app.use("/api/projects", projectRoutes);
 
 app.use(errorMiddleware);
 
