@@ -7,10 +7,7 @@ import { errorMiddleware } from "./middleware/errorMiddleware";
 
 const app = express();
 
-app.use(cors({
-    origin: process.env.NEXT_PUBLIC_API_URL,
-    credentials:true
-}));
+app.use(cors());
 
 app.use(express.json());
 
