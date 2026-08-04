@@ -39,7 +39,11 @@ export default function LoginForm() {
         localStorage.setItem("refreshToken", response.refreshToken);
       }
 
-      router.push("/dashboard");
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("auth:login"));
+      }
+
+      router.replace("/dashboard");
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Login failed.";
       setError(message);

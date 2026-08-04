@@ -68,7 +68,16 @@ export const getProjectById = async (
   next: NextFunction,
 ) => {
   try {
-    const project = await Project.findById(req.params.projectId)
+    const { projectId } = req.params;
+
+    if (!projectId) {
+      return res.status(400).json({
+        success: false,
+        message: "Project id is required",
+      });
+    }
+
+    const project = await Project.findById(projectId)
       .populate("owner", "name email")
       .populate("members", "name email");
 

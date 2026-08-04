@@ -1,65 +1,253 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 
-import { getProjects } from "@/api/project.api";
+import {
+  createProject,
+  deleteProject,
+  getProjects,
+  updateProject,
+  type Project,
+  type ProjectInput,
+} from "@/api/project.api";
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+const emptyForm = { title: "", description: "" };
 
 export default function ProjectsPage() {
-  const [projects, setProjects] =
-    useState<any[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [form, setForm] = useState<ProjectInput>(emptyForm);
+  const [saving, setSaving] = useState(false);
 
-  const [loading, setLoading] =
-    useState(true);
-
-  const [error, setError] =
-    useState("");
+  const fetchProjects = async () => {
+    try {
+      setLoading(true);
+      const response = await getProjects();
+      setProjects(response.data || []);
+      setError("");
+    } catch (err: unknown) {
+      const apiError = err as { response?: { data?: { message?: string } } };
+      setError(apiError?.response?.data?.message || "Failed to load projects");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        setLoading(true);
-
-        const data = await getProjects();
-
-        setProjects(data.data || []);
-      } catch (error: any) {
-        setError(
-          error.response?.data?.message ||
-            "Failed to load projects"
-        );
-      } finally {
-        setLoading(false);
-      }
+    const loadProjects = async () => {
+      await fetchProjects();
     };
 
-    fetchProjects();
+    void loadProjects();
   }, []);
 
-  if (loading) {
-    return <p>Loading...</p>;
-  }
+  const openCreateDialog = () => {
+    setEditingProject(null);
+    setForm(emptyForm);
+    setIsOpen(true);
+  };
 
-  if (error) {
-    return <p>{error}</p>;
-  }
+  const openEditDialog = (project: Project) => {
+    setEditingProject(project);
+    setForm({ title: project.title, description: project.description || "" });
+    setIsOpen(true);
+  };
+
+  const handleSubmit = async () => {
+    if (!form.title.trim()) {
+      setError("Project title is required");
+      return;
+    }
+
+    try {
+      setSaving(true);
+      if (editingProject) {
+        await updateProject(editingProject._id, { title: form.title, description: form.description });
+      } else {
+        await createProject({ title: form.title, description: form.description });
+      }
+
+      setIsOpen(false);
+      setForm(emptyForm);
+      setEditingProject(null);
+      await fetchProjects();
+    } catch (err: unknown) {
+      const apiError = err as { response?: { data?: { message?: string } } };
+      setError(apiError?.response?.data?.message || "Project action failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (projectId: string) => {
+    if (!window.confirm("Delete this project?")) return;
+
+    try {
+      await deleteProject(projectId);
+      await fetchProjects();
+    } catch (err: unknown) {
+      const apiError = err as { response?: { data?: { message?: string } } };
+      setError(apiError?.response?.data?.message || "Unable to delete project");
+    }
+  };
 
   return (
-    <div>
-      <h1>Projects</h1>
+    <div className="min-h-screen bg-slate-950 text-slate-50">
+      <DashboardHeader />
 
-      {projects.length === 0 ? (
-        <p>No projects found.</p>
-      ) : (
-        projects.map((project) => (
-          <div key={project._id}>
-            <h2>{project.title}</h2>
-
-            <p>
-              {project.description}
-            </p>
+      <div className="mx-auto max-w-6xl p-4 sm:p-6">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.25em] text-sky-300">Workspace</p>
+            <h1 className="mt-2 text-3xl font-semibold text-white">Projects</h1>
           </div>
-        ))
-      )}
+
+          <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={openCreateDialog} className="gap-2">
+                <Plus className="h-4 w-4" />
+                New project
+              </Button>
+            </DialogTrigger>
+
+            <DialogContent className="border-slate-800 bg-slate-900 text-slate-50">
+              <DialogHeader>
+                <DialogTitle>{editingProject ? "Edit project" : "Create project"}</DialogTitle>
+              </DialogHeader>
+
+              <div className="space-y-4 py-2">
+                <div className="space-y-2">
+                  <Label htmlFor="title">Project name</Label>
+                  <Input
+                    id="title"
+                    value={form.title}
+                    onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
+                    placeholder="Website redesign"
+                    className="border-slate-700 bg-slate-950 text-white"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Input
+                    id="description"
+                    value={form.description}
+                    onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))}
+                    placeholder="Brief overview of the project"
+                    className="border-slate-700 bg-slate-950 text-white"
+                  />
+                </div>
+              </div>
+
+              <DialogFooter className="gap-2 sm:gap-2">
+                <Button type="button" variant="secondary" onClick={() => setIsOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="button" onClick={handleSubmit} disabled={saving}>
+                  {saving ? "Saving..." : editingProject ? "Update" : "Create"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        {error ? (
+          <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+            {error}
+          </div>
+        ) : null}
+
+        {loading ? (
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-10 text-center text-slate-300">
+            Loading projects...
+          </div>
+        ) : projects.length === 0 ? (
+          <Card className="border-dashed border-slate-700 bg-slate-900/60">
+            <CardContent className="flex min-h-52 flex-col items-center justify-center text-center">
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-sky-500/10 text-sky-300">
+                <Plus className="h-5 w-5" />
+              </div>
+              <h2 className="text-xl font-semibold text-white">No projects yet</h2>
+              <p className="mt-2 max-w-md text-sm text-slate-400">
+                Start by creating your first project and keep your work organized.
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {projects.map((project) => (
+              <Card key={project._id} className="border-slate-800 bg-slate-900/80 transition hover:border-sky-500/40 hover:shadow-xl hover:shadow-slate-950/30">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1">
+                      <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Project</p>
+                      <Link href={`/projects/${project._id}`} className="mt-2 block text-xl font-semibold text-white hover:text-sky-300">
+                        {project.title}
+                      </Link>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          openEditDialog(project);
+                        }}
+                        className="h-8 w-8 text-slate-300 hover:text-white"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          handleDelete(project._id);
+                        }}
+                        className="h-8 w-8 text-slate-300 hover:text-red-300"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="space-y-4">
+                  <Link href={`/projects/${project._id}`} className="block">
+                    <p className="min-h-11 text-sm leading-6 text-slate-300">
+                      {project.description || "No description yet."}
+                    </p>
+                  </Link>
+
+                  <div className="flex items-center justify-between border-t border-slate-800 pt-4 text-sm text-slate-400">
+                    <span>{project.members?.length || 0} members</span>
+                    <span>{project.owner?.name || "Owner"}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

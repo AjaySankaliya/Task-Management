@@ -19,6 +19,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const refreshAuth = useCallback(async () => {
+    try {
+      setLoading(true);
+
+      const accessToken = localStorage.getItem("accessToken");
+
+      if (!accessToken) {
+        setUser(null);
+        return;
+      }
+
+      const response = await getMe();
+      setUser(response.user ?? null);
+    } catch {
+      clearAuthTokens();
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     const handleLogoutEvent = () => {
       clearAuthTokens();
@@ -26,37 +47,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
     };
 
-    const initializeAuth = async () => {
-      try {
-        const accessToken = localStorage.getItem("accessToken");
-
-        if (!accessToken) {
-          setUser(null);
-          return;
-        }
-
-        const response = await getMe();
-        setUser(response.user ?? null);
-      } catch {
-        clearAuthTokens();
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
+    const handleLoginEvent = () => {
+      void refreshAuth();
     };
 
     if (typeof window !== "undefined") {
       window.addEventListener("auth:logout", handleLogoutEvent);
+      window.addEventListener("auth:login", handleLoginEvent);
     }
 
-    initializeAuth();
+    const init = window.setTimeout(() => {
+      void refreshAuth();
+    }, 0);
 
     return () => {
       if (typeof window !== "undefined") {
+        window.clearTimeout(init);
+      }
+      if (typeof window !== "undefined") {
         window.removeEventListener("auth:logout", handleLogoutEvent);
+        window.removeEventListener("auth:login", handleLoginEvent);
       }
     };
-  }, []);
+  }, [refreshAuth]);
 
   const logout = useCallback(async () => {
     try {

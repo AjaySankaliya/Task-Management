@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BarChart3, FolderKanban, LayoutDashboard, LogOut, Settings, Users } from "lucide-react";
+import { FolderKanban, LayoutDashboard, ListTodo, LogOut } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -7,9 +7,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Projects", href: "/projects", icon: FolderKanban },
-  { label: "Team", href: "/team", icon: Users },
-  { label: "Reports", href: "/reports", icon: BarChart3 },
-  { label: "Settings", href: "/settings", icon: Settings },
+  { label: "Tasks", href: "/tasks", icon: ListTodo },
 ];
 
 export function Sidebar() {
