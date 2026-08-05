@@ -87,7 +87,7 @@ export const getTasks = async (
   next: NextFunction,
 ) => {
   try {
-    const { search, status, priority, dueDate } = req.query;
+    const { search, status, priority, dueDate, assignee, project } = req.query;
 
     const filter: any = {};
 
@@ -114,6 +114,14 @@ export const getTasks = async (
 
     if (priority) {
       filter.priority = priority;
+    }
+
+    if (assignee) {
+      filter.assignee = assignee;
+    }
+
+    if (project) {
+      filter.project = project;
     }
 
     if (dueDate) {

@@ -23,12 +23,21 @@ export type Task = {
   updatedAt?: string;
 };
 
+export type TaskQueryParams = {
+  project?: string;
+  search?: string;
+  status?: "todo" | "in-progress" | "done";
+  priority?: "low" | "medium" | "high";
+  assignee?: string;
+  dueDate?: string;
+};
+
 export const createTask = async (data: TaskInput) => {
   const { data: response } = await api.post(`/tasks`, data);
   return response;
 };
 
-export const getTasks = async (params?: Record<string, any>) => {
+export const getTasks = async (params?: TaskQueryParams) => {
   const { data } = await api.get(`/tasks`, { params });
   return data;
 };
