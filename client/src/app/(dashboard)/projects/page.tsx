@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 
 import {
@@ -12,6 +12,7 @@ import {
   type Project,
   type ProjectInput,
 } from "@/api/project.api";
+// task APIs are used on task screens; not needed on project list
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -32,32 +33,35 @@ export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  
   const [isOpen, setIsOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [form, setForm] = useState<ProjectInput>(emptyForm);
   const [saving, setSaving] = useState(false);
 
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     try {
       setLoading(true);
       const response = await getProjects();
       setProjects(response.data || []);
       setError("");
+      // nothing extra to load here
     } catch (err: unknown) {
       const apiError = err as { response?: { data?: { message?: string } } };
       setError(apiError?.response?.data?.message || "Failed to load projects");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+
+
+  
 
   useEffect(() => {
-    const loadProjects = async () => {
-      await fetchProjects();
-    };
-
-    void loadProjects();
-  }, []);
+    const t = setTimeout(() => { void fetchProjects(); }, 0);
+    return () => clearTimeout(t);
+  }, [fetchProjects]);
 
   const openCreateDialog = () => {
     setEditingProject(null);
@@ -238,9 +242,24 @@ export default function ProjectsPage() {
                     </p>
                   </Link>
 
-                  <div className="flex items-center justify-between border-t border-slate-800 pt-4 text-sm text-slate-400">
-                    <span>{project.members?.length || 0} members</span>
-                    <span>{project.owner?.name || "Owner"}</span>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between border-t border-slate-800 pt-4 text-sm text-slate-400">
+                      <span>{project.members?.length || 0} members</span>
+                      <span>{project.owner?.name || "Owner"}</span>
+                    </div>
+
+                    {/* Tasks moved to Kanban board. Open board for full task management. */}
+                    <div className="pt-2">
+                      <div className="flex items-center justify-between border-t border-slate-800 pt-4 text-sm text-slate-400">
+                        <span>{project.members?.length || 0} members</span>
+                        <div className="flex items-center gap-2">
+                          <span>{project.owner?.name || "Owner"}</span>
+                          <Link href={`/projects/${project._id}/kanban`}>
+                            <Button size="sm" className="ml-2">Open Board</Button>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

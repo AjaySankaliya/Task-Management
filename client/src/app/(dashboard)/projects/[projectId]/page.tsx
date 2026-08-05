@@ -121,6 +121,11 @@ export default function ProjectDetailPage() {
             <ArrowLeft className="h-4 w-4" />
             Back to projects
           </Link>
+          <div>
+            <Link href={`/projects/${projectId}/kanban`}>
+              <Button>Open Board</Button>
+            </Link>
+          </div>
         </div>
 
         <Card className="mb-6 border-slate-800 bg-slate-900/80">
@@ -132,6 +137,8 @@ export default function ProjectDetailPage() {
             <p className="text-sm text-slate-400">Owner: {project.owner?.name || "Unknown"}</p>
           </CardContent>
         </Card>
+
+        {/* Tasks are managed on the Kanban board — use Open Board to view/manage tasks */}
 
         <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
           <Card className="border-slate-800 bg-slate-900/80">

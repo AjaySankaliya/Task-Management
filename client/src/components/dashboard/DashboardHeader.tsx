@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Link from "next/link";
-import { Bell, ChevronDown, FolderKanban, LayoutDashboard, ListTodo, LogOut, Menu, User, X } from "lucide-react";
+import { Bell, ChevronDown, FolderKanban, LayoutDashboard, LogOut, Menu, User, X } from "lucide-react";
 
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,6 @@ import {
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Projects", href: "/projects", icon: FolderKanban },
-  { label: "Tasks", href: "/tasks", icon: ListTodo },
 ];
 
 export function DashboardHeader() {
