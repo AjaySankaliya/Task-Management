@@ -13,9 +13,9 @@ import {
   removeMember,
   type Project,
 } from "@/api/project.api";
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 
 export default function ProjectDetailPage() {
   const params = useParams<{ projectId?: string }>();
@@ -115,26 +115,37 @@ export default function ProjectDetailPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50">
+      <DashboardHeader />
       <div className="mx-auto max-w-6xl p-4 sm:p-6">
-        <div className="mb-6 flex items-center justify-between gap-4">
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <Link href="/projects" className="inline-flex items-center gap-2 text-sm text-slate-300 hover:text-white">
             <ArrowLeft className="h-4 w-4" />
             Back to projects
           </Link>
-          <div>
-            <Link href={`/projects/${projectId}/kanban`}>
-              <Button>Open Board</Button>
-            </Link>
-          </div>
+          <Link href={`/projects/${projectId}/kanban`}>
+            <Button>Open Board</Button>
+          </Link>
         </div>
 
         <Card className="mb-6 border-slate-800 bg-slate-900/80">
-          <CardHeader>
-            <CardTitle className="text-3xl text-white">{project.title}</CardTitle>
+          <CardHeader className="space-y-6 border-b border-slate-800 pb-6">
+            <div>
+              <CardTitle className="text-3xl text-white">{project.title}</CardTitle>
+              <p className="mt-2 text-sm text-slate-400">{project.description || "No project description provided."}</p>
+            </div>
+            <div className="flex flex-wrap gap-3 text-sm text-slate-300">
+              <span className="rounded-full border border-slate-800 bg-slate-950/70 px-3 py-1">
+                Owner: {project.owner?.name || "Unknown"}
+              </span>
+              <span className="rounded-full border border-slate-800 bg-slate-950/70 px-3 py-1">
+                {members.length} project member{members.length === 1 ? "" : "s"}
+              </span>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-2 text-slate-300">
-            <p>{project.description || "No project description provided."}</p>
-            <p className="text-sm text-slate-400">Owner: {project.owner?.name || "Unknown"}</p>
+          <CardContent className="space-y-4 text-slate-300">
+            <p className="text-sm leading-7 text-slate-400">
+              Manage members, track progress, and switch to the board for task planning.
+            </p>
           </CardContent>
         </Card>
 

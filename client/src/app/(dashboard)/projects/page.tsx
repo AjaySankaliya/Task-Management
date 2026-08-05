@@ -117,61 +117,71 @@ export default function ProjectsPage() {
     <div className="min-h-screen bg-slate-950 text-slate-50">
       <DashboardHeader />
 
-      <div className="mx-auto max-w-6xl p-4 sm:p-6">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.25em] text-sky-300">Workspace</p>
-            <h1 className="mt-2 text-3xl font-semibold text-white">Projects</h1>
-          </div>
-
-          <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mb-10 rounded-4xl border border-slate-800 bg-slate-900/80 p-8 shadow-2xl shadow-slate-950/20 backdrop-blur-lg sm:p-10">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-3xl">
+              <p className="text-xs uppercase tracking-[0.35em] text-sky-300/70">Workspace</p>
+              <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white">Projects</h1>
+              <p className="mt-3 text-sm leading-6 text-slate-400">
+                Organize work by project, collaborate with your team, and open kanban boards instantly.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
               <Button onClick={openCreateDialog} className="gap-2">
                 <Plus className="h-4 w-4" />
                 New project
               </Button>
-            </DialogTrigger>
+              <span className="rounded-2xl border border-slate-800 bg-slate-950/70 px-4 py-3 text-sm text-slate-300">
+                {projects.length} project{projects.length === 1 ? "" : "s"}
+              </span>
+            </div>
+          </div>
+        </div>
 
-            <DialogContent className="border-slate-800 bg-slate-900 text-slate-50">
-              <DialogHeader>
-                <DialogTitle>{editingProject ? "Edit project" : "Create project"}</DialogTitle>
-              </DialogHeader>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <DialogTrigger asChild>
+            <Button className="sr-only">Open project modal</Button>
+          </DialogTrigger>
+          <DialogContent className="border-slate-800 bg-slate-900 text-slate-50 shadow-2xl shadow-slate-950/30">
+            <DialogHeader>
+              <DialogTitle>{editingProject ? "Edit project" : "Create project"}</DialogTitle>
+            </DialogHeader>
 
-              <div className="space-y-4 py-2">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Project name</Label>
-                  <Input
-                    id="title"
-                    value={form.title}
-                    onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
-                    placeholder="Website redesign"
-                    className="border-slate-700 bg-slate-950 text-white"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Input
-                    id="description"
-                    value={form.description}
-                    onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))}
-                    placeholder="Brief overview of the project"
-                    className="border-slate-700 bg-slate-950 text-white"
-                  />
-                </div>
+            <div className="space-y-5 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Project name</Label>
+                <Input
+                  id="title"
+                  value={form.title}
+                  onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
+                  placeholder="Website redesign"
+                  className="border-slate-700 bg-slate-950 text-white"
+                />
               </div>
 
-              <DialogFooter className="gap-2 sm:gap-2">
-                <Button type="button" variant="secondary" onClick={() => setIsOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="button" onClick={handleSubmit} disabled={saving}>
-                  {saving ? "Saving..." : editingProject ? "Update" : "Create"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Input
+                  id="description"
+                  value={form.description}
+                  onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))}
+                  placeholder="Brief overview of the project"
+                  className="border-slate-700 bg-slate-950 text-white"
+                />
+              </div>
+            </div>
+
+            <DialogFooter className="gap-2 sm:gap-3">
+              <Button type="button" variant="secondary" onClick={() => setIsOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="button" onClick={handleSubmit} disabled={saving}>
+                {saving ? "Saving..." : editingProject ? "Update" : "Create"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {error ? (
           <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
@@ -243,23 +253,15 @@ export default function ProjectsPage() {
                   </Link>
 
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between border-t border-slate-800 pt-4 text-sm text-slate-400">
-                      <span>{project.members?.length || 0} members</span>
+                    <div className="flex flex-col gap-3 border-t border-slate-800 pt-4 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+                    <span>{project.members?.length || 0} members</span>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                       <span>{project.owner?.name || "Owner"}</span>
+                      <Link href={`/projects/${project._id}/kanban`}>
+                        <Button size="sm" className="ml-0 sm:ml-2">Open Board</Button>
+                      </Link>
                     </div>
-
-                    {/* Tasks moved to Kanban board. Open board for full task management. */}
-                    <div className="pt-2">
-                      <div className="flex items-center justify-between border-t border-slate-800 pt-4 text-sm text-slate-400">
-                        <span>{project.members?.length || 0} members</span>
-                        <div className="flex items-center gap-2">
-                          <span>{project.owner?.name || "Owner"}</span>
-                          <Link href={`/projects/${project._id}/kanban`}>
-                            <Button size="sm" className="ml-2">Open Board</Button>
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
+                  </div>
                   </div>
                 </CardContent>
               </Card>

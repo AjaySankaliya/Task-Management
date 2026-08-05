@@ -21,6 +21,8 @@ export default function TaskDetailPage() {
   const [assignee, setAssignee] = useState("");
   const [status, setStatus] = useState("todo");
   const [priority, setPriority] = useState("medium");
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     void (async () => {
@@ -40,10 +42,21 @@ export default function TaskDetailPage() {
 
   const handleSave = async () => {
     if (!taskId) return;
+    if (!title.trim()) {
+      setError("Task title is required.");
+      return;
+    }
+
     try {
+      setSaving(true);
+      setError("");
       await updateTask(taskId, { title, description, assignee, status: status as any, priority: priority as any });
       router.push(`/projects/${projectId}/kanban`);
-    } catch (e) {}
+    } catch (e) {
+      setError("Unable to update task.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async () => {
@@ -52,60 +65,86 @@ export default function TaskDetailPage() {
     try {
       await deleteTask(taskId);
       router.push(`/projects/${projectId}/kanban`);
-    } catch (e) {}
+    } catch (e) {
+      setError("Unable to delete task.");
+    }
   };
 
-  if (!task) return <div className="p-6">Loading...</div>;
+  if (!task) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-200">
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50">
-      <div className="mx-auto max-w-2xl p-6">
-        <h2 className="text-2xl font-semibold mb-4">Edit Task</h2>
-
-        <div className="space-y-4">
-          <div>
-            <label className="mb-1 block text-sm text-slate-300">Title</label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="rounded-[2rem] border border-slate-800 bg-slate-900/80 p-8 shadow-2xl shadow-slate-950/20">
+          <div className="mb-8">
+            <p className="text-xs uppercase tracking-[0.35em] text-sky-300/70">Edit task</p>
+            <h1 className="mt-3 text-4xl font-semibold text-white">{task.title}</h1>
+            <p className="mt-2 text-sm leading-6 text-slate-400">Update task details, change status, or reassign work to your team.</p>
           </div>
 
-          <div>
-            <label className="mb-1 block text-sm text-slate-300">Description</label>
-            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} />
-          </div>
+          {error ? (
+            <div className="mb-6 rounded-3xl border border-red-500/20 bg-red-500/10 px-5 py-4 text-sm text-red-200">
+              {error}
+            </div>
+          ) : null}
 
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="mb-1 block text-sm text-slate-300">Assignee</label>
-              <select value={assignee} onChange={(e) => setAssignee(e.target.value)} className="w-full rounded-md border border-slate-700 bg-slate-950 px-2 py-2 text-sm text-white">
-                <option value="">Unassigned</option>
-                {users.map((u) => (<option key={u._id} value={u._id}>{u.name || u.email}</option>))}
-              </select>
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-200">Title</label>
+              <Input value={title} onChange={(e) => setTitle(e.target.value)} className="bg-slate-950/80 border-slate-700" />
             </div>
 
-            <div>
-              <label className="mb-1 block text-sm text-slate-300">Status</label>
-              <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full rounded-md border border-slate-700 bg-slate-950 px-2 py-2 text-sm text-white">
-                <option value="todo">To Do</option>
-                <option value="in-progress">In Progress</option>
-                <option value="done">Done</option>
-              </select>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-200">Description</label>
+              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} className="bg-slate-950/80 border-slate-700" />
             </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="mb-1 block text-sm text-slate-300">Priority</label>
-              <select value={priority} onChange={(e) => setPriority(e.target.value)} className="w-full rounded-md border border-slate-700 bg-slate-950 px-2 py-2 text-sm text-white">
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-              </select>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-200">Status</label>
+                <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full rounded-2xl border border-slate-700 bg-slate-950/80 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20">
+                  <option value="todo">To Do</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="done">Done</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-200">Priority</label>
+                <select value={priority} onChange={(e) => setPriority(e.target.value)} className="w-full rounded-2xl border border-slate-700 bg-slate-950/80 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20">
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+              </div>
             </div>
-          </div>
 
-          <div className="flex gap-2">
-            <Button onClick={handleSave} className="ml-auto">Save</Button>
-            <Button variant="secondary" onClick={handleDelete}>Delete</Button>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-200">Assignee</label>
+                <select value={assignee} onChange={(e) => setAssignee(e.target.value)} className="w-full rounded-2xl border border-slate-700 bg-slate-950/80 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20">
+                  <option value="">Unassigned</option>
+                  {users.map((u) => (
+                    <option key={u._id} value={u._id}>{u.name || u.email}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+              <Button variant="secondary" onClick={handleDelete} className="w-full sm:w-auto">
+                Delete
+              </Button>
+              <Button onClick={handleSave} disabled={saving} className="w-full sm:w-auto">
+                {saving ? "Saving..." : "Save changes"}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

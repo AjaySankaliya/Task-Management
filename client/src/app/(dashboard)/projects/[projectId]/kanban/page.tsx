@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { getProjectById, getProjectMembers, type Project } from "@/api/project.api";
 import { getTasks, updateTaskStatus, type Task, type TaskQueryParams } from "@/api/task.api";
 
@@ -175,6 +176,7 @@ export default function ProjectKanbanPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50">
+      <DashboardHeader />
       <div className="mx-auto max-w-7xl p-6">
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
