@@ -15,10 +15,10 @@ export function Sidebar() {
     <aside className="hidden w-64 shrink-0 border-r border-slate-800 bg-slate-950/80 p-4 lg:flex lg:flex-col">
       <div className="mb-8 flex items-center gap-3 px-2">
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-500/15 text-sm font-semibold text-sky-300">
-          TF
+          TM
         </div>
         <div>
-          <p className="text-sm font-semibold text-white">TaskFlow</p>
+          <p className="text-sm font-semibold text-white">Task-Management</p>
           <p className="text-xs text-slate-400">Workspace</p>
         </div>
       </div>
