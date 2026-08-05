@@ -1,5 +1,6 @@
 "use client";
 
+import { AxiosError } from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
@@ -45,7 +46,10 @@ export default function LoginForm() {
 
       router.replace("/dashboard");
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Login failed.";
+      const axiosError = err as AxiosError<{ message?: string }>;
+      const message =
+        axiosError.response?.data?.message ??
+        (err instanceof Error ? err.message : "Login failed.");
       setError(message);
     } finally {
       setLoading(false);

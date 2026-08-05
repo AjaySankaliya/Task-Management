@@ -1,5 +1,6 @@
 "use client";
 
+import { AxiosError } from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
@@ -44,7 +45,10 @@ export default function RegisterForm() {
       await registerUser({ name, email, password });
       router.push("/login");
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Registration failed.";
+      const axiosError = err as AxiosError<{ message?: string }>;
+      const message =
+        axiosError.response?.data?.message ??
+        (err instanceof Error ? err.message : "Registration failed.");
       setError(message);
     } finally {
       setLoading(false);
@@ -56,7 +60,7 @@ export default function RegisterForm() {
       <Card className="w-full max-w-md border-slate-800 bg-slate-900/80 shadow-2xl shadow-slate-950/60">
         <CardHeader className="space-y-2 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-linear-to-br from-violet-500/20 to-violet-600/10 text-lg font-bold text-violet-300">
-            TF
+            TM
           </div>
           <CardTitle className="text-2xl">Create account</CardTitle>
           <CardDescription className="text-slate-400">Start managing your work</CardDescription>

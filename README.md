@@ -1,5 +1,9 @@
 # Task Management
 
+## Live Project
+
+**[https://task-management-silk-three.vercel.app/](https://task-management-silk-three.vercel.app/)**
+
 A full-stack task and project management application with a Next.js frontend and an Express + MongoDB backend.
 
 ## Project Structure
