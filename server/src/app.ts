@@ -13,7 +13,13 @@ app.use(cors());
 app.use(express.json());
 
 // request logging
-app.use(morgan("combined", { stream: { write: (msg) => logger.info(msg.trim()) } }));
+app.use(
+  morgan("combined", {
+    stream: {
+      write: (msg: string) => logger.info(msg.trim()),
+    },
+  })
+);
 
 app.get("/", (req, res) => {
   res.json({

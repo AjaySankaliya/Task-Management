@@ -188,7 +188,13 @@ export const googleCallback = async (
   next: NextFunction,
 ) => {
   try {
-    const code = Array.isArray(req.query.code) ? req.query.code[0] : req.query.code;
+    const rawCode = req.query.code;
+    const code =
+      typeof rawCode === "string"
+        ? rawCode
+        : Array.isArray(rawCode) && typeof rawCode[0] === "string"
+          ? rawCode[0]
+          : undefined;
 
     if (!code) {
       return res.status(400).json({

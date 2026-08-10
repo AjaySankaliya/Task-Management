@@ -43,15 +43,26 @@ export const getTasks = async (req: AuthRequest, res: Response, next: NextFuncti
     const { search, status, priority, dueDate, assignee, project } = req.query;
 
     const filter: any = {};
+    const toStringValue = (value: string | string[] | undefined): string | undefined => {
+      if (Array.isArray(value)) return value[0];
+      return typeof value === "string" ? value : undefined;
+    };
 
-    if (search) {
-      filter.$or = [{ title: { $regex: search, $options: "i" } }, { description: { $regex: search, $options: "i" } }];
+    const searchValue = toStringValue(search as string | string[] | undefined);
+    const statusValue = toStringValue(status as string | string[] | undefined);
+    const priorityValue = toStringValue(priority as string | string[] | undefined);
+    const assigneeValue = toStringValue(assignee as string | string[] | undefined);
+    const projectValue = toStringValue(project as string | string[] | undefined);
+    const dueDateValue = toStringValue(dueDate as string | string[] | undefined);
+
+    if (searchValue) {
+      filter.$or = [{ title: { $regex: searchValue, $options: "i" } }, { description: { $regex: searchValue, $options: "i" } }];
     }
-    if (status) filter.status = status;
-    if (priority) filter.priority = priority;
-    if (assignee) filter.assignee = assignee;
-    if (project) filter.project = project;
-    if (dueDate) filter.dueDate = { $lte: new Date(dueDate as string) };
+    if (statusValue) filter.status = statusValue;
+    if (priorityValue) filter.priority = priorityValue;
+    if (assigneeValue) filter.assignee = assigneeValue;
+    if (projectValue) filter.project = projectValue;
+    if (dueDateValue) filter.dueDate = { $lte: new Date(dueDateValue) };
 
     const tasks = await TaskQueries.findTasks(filter);
 
@@ -61,9 +72,17 @@ export const getTasks = async (req: AuthRequest, res: Response, next: NextFuncti
   }
 };
 
+const getRouteParamId = (value: string | string[] | undefined): string | undefined => {
+  if (Array.isArray(value)) return value[0];
+  return typeof value === "string" ? value : undefined;
+};
+
 export const getTaskById = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const task = await TaskQueries.findTaskById(req.params.id as string);
+    const taskId = getRouteParamId(req.params.id);
+    if (!taskId) return res.status(400).json({ success: false, message: "Task id is required" });
+
+    const task = await TaskQueries.findTaskById(taskId);
     if (!task) return res.status(404).json({ success: false, message: "Task not found" });
     res.status(200).json({ success: true, data: task });
   } catch (error) {
@@ -74,7 +93,10 @@ export const getTaskById = async (req: AuthRequest, res: Response, next: NextFun
 export const updateTask = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { title, description, status, priority, dueDate, assignee } = req.body;
-    const task = await TaskCommands.updateTaskCommand(req.params.id, { title, description, status, priority, dueDate, assignee });
+    const taskId = getRouteParamId(req.params.id);
+    if (!taskId) return res.status(400).json({ success: false, message: "Task id is required" });
+
+    const task = await TaskCommands.updateTaskCommand(taskId, { title, description, status, priority, dueDate, assignee });
     if (!task) return res.status(404).json({ success: false, message: "Task not found" });
     res.status(200).json({ success: true, message: "Task Updated Successfully", data: task });
   } catch (error) {
@@ -84,7 +106,10 @@ export const updateTask = async (req: AuthRequest, res: Response, next: NextFunc
 
 export const deleteTask = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const task = await TaskQueries.findTaskById(req.params.id);
+    const taskId = getRouteParamId(req.params.id);
+    if (!taskId) return res.status(400).json({ success: false, message: "Task id is required" });
+
+    const task = await TaskQueries.findTaskById(taskId);
     if (!task) return res.status(404).json({ success: false, message: "Task not found" });
 
     const project = await Project.findById((task.project as any)?._id || task.project);
@@ -92,7 +117,7 @@ export const deleteTask = async (req: AuthRequest, res: Response, next: NextFunc
 
     if (project.owner.toString() !== req.userId) return res.status(403).json({ success: false, message: "Only project owner can delete the task" });
 
-    await TaskCommands.deleteTaskCommand(req.params.id);
+    await TaskCommands.deleteTaskCommand(taskId);
     res.status(200).json({ success: true, message: "Task Deleted Successfully" });
   } catch (error) {
     next(error);
@@ -102,9 +127,11 @@ export const deleteTask = async (req: AuthRequest, res: Response, next: NextFunc
 export const updateTaskStatus = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { status } = req.body;
+    const taskId = getRouteParamId(req.params.id);
+    if (!taskId) return res.status(400).json({ success: false, message: "Task id is required" });
     if (!["todo", "in-progress", "done"].includes(status)) return res.status(400).json({ success: false, message: "Invalid status" });
 
-    const task = await TaskCommands.updateTaskStatusCommand(req.params.id, status);
+    const task = await TaskCommands.updateTaskStatusCommand(taskId, status);
     if (!task) return res.status(404).json({ success: false, message: "Task not found" });
 
     res.status(200).json({ success: true, message: "Task status updated successfully", data: task });
