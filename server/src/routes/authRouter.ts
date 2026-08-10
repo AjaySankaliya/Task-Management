@@ -6,6 +6,8 @@ import {
   me,
   logout,
   getUsers,
+  googleAuth,
+  googleCallback,
 } from "../controllers/authController";
 import { authMiddleware } from "../middleware/authMiddleware";
 import { validate } from "../utils/validate";
@@ -15,6 +17,8 @@ const router = Router();
 
 router.post("/register", validate(registerSchema), register);
 router.post("/login", validate(loginSchema), login);
+router.get("/google", googleAuth);
+router.get("/google/callback", googleCallback);
 router.post("/refresh-token", refreshToken);
 router.get("/me", authMiddleware, me);
 router.post("/logout", authMiddleware, logout);

@@ -7,7 +7,7 @@ import { FormEvent, useState } from "react";
 
 import { registerUser } from "@/api/auth.api";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -60,10 +60,9 @@ export default function RegisterForm() {
       <Card className="w-full max-w-md border-slate-800 bg-slate-900/80 shadow-2xl shadow-slate-950/60">
         <CardHeader className="space-y-2 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-linear-to-br from-violet-500/20 to-violet-600/10 text-lg font-bold text-violet-300">
-            TM
+            TF
           </div>
-          <CardTitle className="text-2xl">Create account</CardTitle>
-          <CardDescription className="text-slate-400">Start managing your work</CardDescription>
+          <CardTitle className="text-2xl">TaskFlow</CardTitle>
         </CardHeader>
 
         <CardContent>

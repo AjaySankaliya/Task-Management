@@ -11,6 +11,9 @@ import { Label } from "@/components/ui/label";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { getProjectById, getProjectMembers, type Project } from "@/api/project.api";
 import { getTasks, updateTaskStatus, type Task, type TaskQueryParams } from "@/api/task.api";
+import TaskForm from "@/components/tasks/TaskForm";
+import { AppToaster } from "@/components/ui/toast";
+import { toast } from "sonner";
 
 const STATUS_COLUMNS = ["todo", "in-progress", "done"] as const;
 
@@ -185,9 +188,25 @@ export default function ProjectKanbanPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <Link href={`/projects/${projectId}/tasks/new`}>
-              <Button>Add Task</Button>
-            </Link>
+            <TaskForm
+              projectId={projectId}
+              users={members}
+              trigger={<Button>Add Task</Button>}
+              onSuccess={() => {
+                // refresh tasks after successful create
+                void (async () => {
+                  try {
+                    const params: TaskQueryParams = { project: projectId };
+                    const resp = await getTasks(params);
+                    setTasks(resp.data || []);
+                    toast.success("Task created");
+                  } catch {
+                    toast.error("Could not refresh tasks");
+                  }
+                })();
+              }}
+            />
+            <AppToaster />
             <Button variant="secondary" onClick={() => router.back()}>
               Back
             </Button>

@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import logger from "../utils/logger";
 
 export const errorMiddleware = (
   error: any,
@@ -6,11 +7,11 @@ export const errorMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
-  console.error(error);
+  logger.error(`${error.stack || error}`);
 
   res.status(error.statusCode || 500).json({
     success: false,
-    message: error.message || "Internal Server Error"
+    message: error.message || "Internal Server Error",
   });
   next();
 };

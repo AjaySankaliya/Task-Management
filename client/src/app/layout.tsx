@@ -4,7 +4,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { AppToaster } from "@/components/ui/toast";
 
 export const metadata = {
-  title: "Task-Management",
+  title: "TaskFlow",
   description: "Modern task and project management workspace",
 };
 

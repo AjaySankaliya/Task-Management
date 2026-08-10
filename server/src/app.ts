@@ -1,15 +1,19 @@
 import express from "express";
 import cors from "cors";
+import morgan from "morgan";
 import authRoutes from "./routes/authRouter";
 import projectRoutes from "./routes/ProjectRouter";
 import taskRoutes from "./routes/taskRouter";
 import { errorMiddleware } from "./middleware/errorMiddleware";
+import logger from "./utils/logger";
 
 const app = express();
-
 app.use(cors());
 
 app.use(express.json());
+
+// request logging
+app.use(morgan("combined", { stream: { write: (msg) => logger.info(msg.trim()) } }));
 
 app.get("/", (req, res) => {
   res.json({
